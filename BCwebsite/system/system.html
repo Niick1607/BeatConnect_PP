@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="systemStyle.css">
+    <title>BC</title>
+</head>
+
+<body>
+
+    <main>
+        <div class="spanMessage">
+            <div class="spanMessageText"></div>
+        </div>
+        <div class="systemNavContainer">
+
+        </div>
+
+        <section class="login">
+            <div class="cardLogin">
+                <h5>LogIn</h5>
+
+                <div class="form_group field">
+                    <input type="text" id="emailInput" name="email" placeholder="Email" class="logInput" required>
+                    <label for="email" class="logLabel">Email</label>
+                </div>
+
+                <div class="form_group field">
+                    <input type="password" id="passwordInput" name="password" placeholder="Senha" class="logInput"
+                        required>
+                    <label for="password" class="logLabel">Password</label>
+                </div>
+
+                <input type="button" value="Log-in" id="bt">
+            </div>
+        </section>
+
+        <section class="createEnterpriseUser">
+            <div class="gridUsers">
+
+                <div class="side">
+                    <div class="userConsultCard">
+                        <div class="searchUserContainer">
+                            <div class="searchBarContainer">
+                                <input type="text" name="searchUser" id="searchUser" placeholder="Search...">
+                                <button id="searchUserBt">Search</button>
+                                
+                                    <label for="departmentFilter">Department:</label>
+                                    <select id="departmentFilter">
+                                        <option value="">All</option>
+                                        <option value="Development">Development</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="Sales">Sales</option>
+                                        <option value="HR">HR</option>
+                                    </select>
+
+                                    <label for="sortOrder">Sort By:</label>
+                                    <select id="sortOrder">
+                                        <option value="name">Name</option>
+                                        <option value="date">Date</option>
+                                    </select>
+                            </div>
+                        </div>
+                        <div class="userListContainer">
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <aside class="side">
+                    <div class="userEnterpriseRegisterCard">
+                        <h1>Register User</h1>
+                        <input type="text" id="userNameEnterpriseRegister" placeholder="Full name">
+                        <input type="text" id="userEmailEnterpriseRegister" placeholder="Email">
+
+                        <div class="departmentContainder">
+                            <label for="department">Department:</label>
+                            <select id="department" name="department">
+                                <option value="Development">Development</option>
+                                <option value="Quality Assurance (QA)">Quality Assurance (QA)</option>
+                                <option value="Product Management">Product Management</option>
+                                <option value="User Experience (UX) Design">User Experience (UX) Design</option>
+                                <option value="DevOps (Development Operations)">DevOps (Development Operations)</option>
+                                <option value="Technical Support">Technical Support</option>
+                                <option value="Sales and Marketing">Sales and Marketing</option>
+                                <option value="Human Resources (HR)">Human Resources (HR)</option>
+                                <option value="Finance and Accounting">Finance and Accounting</option>
+                                <option value="Information Technology (IT)">Information Technology (IT)</option>
+                                <option value="Admin">Admin</option>
+
+                            </select>
+                        </div>
+
+                        <input type="password" id="userPasswordEnterpriseRegister" placeholder="Password">
+                        <input type="password" id="userConfirmPasswordEnterpriseRegister"
+                            placeholder="Confirm password">
+                        <input type="date" id="userBirthDateRegister" placeholder="Birth date">
+
+                        <button id="registerUserBt" value="Register user">
+                            <span>Register user</span>
+                        </button>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="path"></div>
+            <div class="gridContent">
+                <div class="consultReturn" id="addPath">
+                </div>
+                <div class="consultReturnInfo" id="consultReturnInfo">
+                    <div id="graphics"></div>
+
+                    <div class="addModal"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="settings">
+            
+        </section>
+    </main>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="module" src="../db/src/dataBase.js"></script>
+    <script type="module" src="System.js"></script>
+
+</body>
+
+</html>

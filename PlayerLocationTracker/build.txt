@@ -1,0 +1,3 @@
+displayName = PlayerLocationTracker
+author = Nicolas Toldo
+version = 0.1
