@@ -233,7 +233,7 @@ async function startSystem(userList, companyDataVar) {
     const usersBt = document.getElementById('usersBt');
     const settingsBt = document.getElementById('settingsBt');
 
-    cleanSystem(contentSection, companyDataVar.companyId);
+    cleanSystem(createEnterpriseUserSection, companyDataVar.companyId);
 
     systemBt.addEventListener("click", function () {
         cleanSystem(contentSection, companyDataVar.companyId);

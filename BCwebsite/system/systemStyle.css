@@ -145,13 +145,15 @@ input[type="button"]:hover {
 }
 
 .gridUsers {
-    display: grid;
-    grid-template-columns: 3fr 2fr;
+    display: flex;
+    justify-content: center;
+    /* grid-template-columns: 3fr 2fr; */
     gap: 2vw;
     width: 100%;
 }
 
 .side {
+    width: 80vw;
     background-color: transparent;
 }
 
@@ -163,7 +165,8 @@ aside{
     background-color: var(--black-gray);
     padding: 20px;
     border-radius: 10px;
-    display: flex;
+
+    display: none;
     flex-direction: column;
     align-items: center;
     gap: 15px;

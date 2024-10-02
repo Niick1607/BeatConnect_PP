@@ -182,10 +182,6 @@ async function buscarUsuariosPorCompanyID(companyID, whereToAdd, pageSize = 14, 
                 const userID = childSnapshot.key;
                 const userData = childSnapshot.val();
                 lastVisible = childSnapshot;
-                //     getImage(`company/${companyId}/games/${currentPath.join('/')}`)
-                // .then((url) => {
-                //     document.body.style.backgroundImage = `url(${url})`;
-                // })
                 console.log(`Usuário encontrado: ${userID}, ${userData.username}, ${userData.email}`);
 
                 if (i === 0) {
