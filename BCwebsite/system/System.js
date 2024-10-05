@@ -53,7 +53,7 @@ function updateView(companyId) {
         console.log('Raiz');
         document.body.style.backgroundImage = '';
     } else if (currentDepth === 1) {
-                                    
+
         body.style.backgroundImage = 'url(../testes/image.jpg)';
         body.style.backgroundSize = 'cover';
         body.style.backdropFilter = 'blur(15px)'
@@ -202,8 +202,8 @@ function calculateAverage(node) {
 }
 
 function cleanSystem(section, companyId) {
-    body.style.backgroundImage = 'none'
     let sectionList = [contentSection, loginSection, createEnterpriseUserSection, settingsSection];
+    //limpar essa parte, usar so hash do link smm
     sectionList.forEach(element => {
         if (section !== element) {
             element.style.display = 'none';
@@ -211,13 +211,136 @@ function cleanSystem(section, companyId) {
             element.style.display = 'flex';
             if (section === sectionList[0]) {
                 updateView(companyId);
+            } else if (section === createEnterpriseUserSection) {
+                renderizarUsuarios(userListContainer, companyId);
             }
-            if (section === createEnterpriseUserSection) {
-                buscarUsuariosPorCompanyID(companyId, userListContainer);
+        }
+        if (section == null) {
+            let hash = window.location.hash.substring(1);
+            switch(hash){
+                case 'contentSection':
+                    contentSection.style.display = 'flex';
+                    updateView(companyId);
+                    break;
+                case 'usersSection':
+                    createEnterpriseUserSection.style.display = 'flex';
+                    renderizarUsuarios(userListContainer, companyId);
+                    break;
+                case 'loginSection':
+                    createEnterpriseUserSection.style.display = 'flex';
+                    break;
+                default:
+                    contentSection.style.display = 'flex';
+                    updateView(companyId);
+                    break;
             }
         }
     });
 }
+
+async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisibleUser = null) {
+    whereToAdd.innerHTML = '';
+    localStorage.setItem('userIdSelected', null);
+
+    const { usersData, lastVisible } = await buscarUsuariosPorCompanyID(companyID, pageSize, lastVisibleUser);
+
+    if (usersData.length === 0) {
+        whereToAdd.innerHTML = '<p>No users found.</p>';
+        return;
+    }
+
+    usersData.forEach(({ userID, userData }, index) => {
+        if (index === 0) {
+            let headerDiv = `
+                <div class="userConsultReturnContainer">
+                    <div class="userListImageContainer">
+                        <p>Image</p>
+                    </div>
+                    <p>Username</p>
+                    <p>Department</p>
+                    <p>Options</p>
+                </div>
+            `;
+            let headerElement = document.createElement('div');
+            headerElement.innerHTML = headerDiv;
+            whereToAdd.appendChild(headerElement);
+        }
+
+        let userDiv = `
+            <div class="userConsultReturnContainer">
+                <div class="userListImageContainer">
+                    <img src="${userData.imageUrl}" class="userListImage"/>
+                </div>
+                <p>${userData.username}</p>
+                <p>${userData.department}</p>
+                <div class="profileListOptContainer">
+                    <a>
+                        <img src="../assets/icons/lapis.svg" class="profileListOpt"></img>
+                    </a>
+                    <a>
+                        <img src="../assets/icons/lixo.svg" class="profileListOpt"></img>
+                    </a>
+                </div>
+            </div>
+        `;
+
+        let userElement = document.createElement('div');
+        userElement.innerHTML = userDiv;
+        let userConsultReturnContainer = userElement.firstElementChild;
+        whereToAdd.appendChild(userConsultReturnContainer);
+
+        userConsultReturnContainer.addEventListener("click", () => {
+            whereToAdd.innerHTML = '';
+            localStorage.setItem('userIdSelected', userID);
+            alert(userID)
+            let userSelectedCard = `
+                <div class="userSelectedConsultCard">
+                    <div class="consultUserImgContainer">
+                        <img src="${userData.imageUrl}" alt="">
+                    </div>
+                    <div class="userCardInfoContainer">
+                        <div class="userCardInfo">
+                            <h2>Name: ${userData.username}</h2>
+                        </div>
+                        <div class="userCardInfo">
+                            <h2>Email: ${userData.email}</h2>
+                        </div>
+                        <div class="userCardInfo">
+                            <h2>Department: ${userData.department}</h2>
+                        </div>
+                        <div class="userCardInfo">
+                            <h2>Birth: ${userData.birthYear}</h2>
+                        </div>
+                        <div class="userCardInfo">
+                            <h2>Time in company: 2y and 6months</h2>
+                        </div>
+                        <div class="userCardInfo">
+                            <h2>UserID: ${userID}</h2>
+                        </div>
+                    </div>
+                </div>
+            `;
+            whereToAdd.innerHTML = userSelectedCard;
+        });
+    });
+
+    if (lastVisible) {
+        let paginationDiv = document.createElement('div');
+        paginationDiv.classList.add('pagination');
+
+        if (usersData.length === pageSize) {
+            let nextButton = document.createElement('button');
+            nextButton.innerText = 'Next';
+            nextButton.addEventListener('click', () => {
+                renderizarUsuarios(whereToAdd, companyID, pageSize, lastVisible);
+            });
+            paginationDiv.appendChild(nextButton);
+        }
+
+        whereToAdd.appendChild(paginationDiv);
+    }
+}
+
 
 async function startSystem(userList, companyDataVar) {
     const systemNav = `
@@ -233,7 +356,7 @@ async function startSystem(userList, companyDataVar) {
     const usersBt = document.getElementById('usersBt');
     const settingsBt = document.getElementById('settingsBt');
 
-    cleanSystem(createEnterpriseUserSection, companyDataVar.companyId);
+    cleanSystem(null, companyDataVar.companyId);
 
     systemBt.addEventListener("click", function () {
         cleanSystem(contentSection, companyDataVar.companyId);
@@ -241,7 +364,8 @@ async function startSystem(userList, companyDataVar) {
         let pathFirst = `company/${userList.companyCode}/games`;
     });
     usersBt.addEventListener("click", function () {
-        cleanSystem(createEnterpriseUserSection, companyDataVar.companyId);
+        window.location.hash = 'usersSection';
+        cleanSystem(null, companyDataVar.companyId);
     });
 
     registerUserEnterpriseBt.addEventListener("click", () => {
@@ -262,7 +386,8 @@ async function startSystem(userList, companyDataVar) {
     });
 
     settingsBt.addEventListener("click", function () {
-        cleanSystem(settingsSection, companyDataVar.companyId);
+        window.location.hash = 'usersSection';
+        cleanSystem(null, companyDataVar.companyId);
     });
     console.log(userList.userUid)
     getImage(`users/${userList.userUid}.png`).then(url => {

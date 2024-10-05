@@ -3,8 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebas
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 import { getDatabase, ref, set, get, query, orderByChild, equalTo, onValue, update, runTransaction, limitToFirst, startAfter } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-storage.js";
-const userEnterpriseRegisterCard = document.querySelector(".userEnterpriseRegisterCard");
-const gridUsers = document.querySelector(".gridUsers")
+
 const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 const auth = getAuth(app);
@@ -146,11 +145,8 @@ async function findUserByEmail(email) {
     }
 }
 
-async function buscarUsuariosPorCompanyID(companyID, whereToAdd, pageSize = 14, lastVisibleUser = null) {
-    whereToAdd.innerHTML = '';
-    localStorage.setItem('userIdSelected', null);
+async function buscarUsuariosPorCompanyID(companyID, pageSize = 14, lastVisibleUser = null) {
     const usersRef = ref(db, 'users/enterprise');
-
     let queryFindByCI;
 
     if (lastVisibleUser) {
@@ -174,124 +170,43 @@ async function buscarUsuariosPorCompanyID(companyID, whereToAdd, pageSize = 14, 
 
     try {
         const snapshot = await get(queryFindByCI);
+        let usersData = [];
         let lastVisible = null;
 
         if (snapshot.exists()) {
-            let i = 0;
+            let promises = [];
+
             snapshot.forEach((childSnapshot) => {
                 const userID = childSnapshot.key;
                 const userData = childSnapshot.val();
                 lastVisible = childSnapshot;
-                console.log(`Usuário encontrado: ${userID}, ${userData.username}, ${userData.email}`);
 
-                if (i === 0) {
-                    let addDiv = `
-                            <div class="userConsultReturnContainer">
-                            <div class="userListImageContainer">
-                               <p>Image</p>
-                            </div>
-                            <p>Username</p>
-                            <p>Department</p>
-                            <p>Options</p>
-                            </div>
-                        `;      
-                        let createDiv = document.createElement('div');
-                        createDiv.innerHTML = addDiv;
-                        let userConsultReturnContainer = createDiv.querySelector('.userConsultReturnContainer');
-
-                        whereToAdd.appendChild(userConsultReturnContainer);
-                }
-
-                getImage(`users/${userID}.png`)
+                // Adicionamos a promessa de obter a imagem ao array de promessas
+                const imagePromise = getImage(`users/${userID}.png`)
                     .then(url => {
-                        let addDiv = `
-                            <div class="userConsultReturnContainer">
-                            <div class="userListImageContainer">
-                                <img src="${url}" class="userListImage"/>
-                            </div>
-                            <p>${userData.username}</p>
-                            <p>${userData.department}</p>
-                            <div class="profileListOptContainer">
-                                <a>
-                                    <img src="../assets/icons/lapis.svg" class="profileListOpt"></img>
-                                </a>
-                                    <img src="../assets/icons/lixo.svg" class="profileListOpt"></img>
-                                <a>
-                                </a>
-                            </ div>
-                            </div>
-                        `;      
-                        let createDiv = document.createElement('div');
-                        createDiv.innerHTML = addDiv;
-                        let userConsultReturnContainer = createDiv.querySelector('.userConsultReturnContainer');
-
-                        whereToAdd.appendChild(userConsultReturnContainer);
-
-                        userConsultReturnContainer.addEventListener("click", () => {
-                            whereToAdd.innerHTML = '';
-                            localStorage.setItem('userIdSelected', userID);
-                            getImage(`users/${userID}.png`)
-                                .then(url => {
-                                    let userSelectedCard = `
-                                <div class="userSelectedConsultCard">
-                                <div class="consultUserImgContainer">
-                                <img src="${url}" alt="">
-                                </div>
-                                <div class="userCardInfoContainer">
-                                <div class="userCardInfo">
-                                <h2>Name: ${userData.username}</h2>
-                                </div>
-                                <div class="userCardInfo">
-                                <h2>Email: ${userData.email}</h2>
-                                </div>
-                                <div class="userCardInfo">
-                                <h2>Department: ${userData.department}</h2>
-                                </div>
-                                <div class="userCardInfo">
-                                <h2>Birth: ${userData.birthYear}</h2>
-                                </div>
-                                <div class="userCardInfo">
-                                <h2>Time in company: 2y and 6months</h2>
-                                </div>
-                                <div class="userCardInfo">
-                                <h2>UserID: ${userID}</h2>
-                                </div>
-                                </div>
-                                </div>
-                                `;
-                                userEnterpriseRegisterCard.style.display = 'none';
-                                gridUsers.style.display = 'flex';
-                                    whereToAdd.innerHTML = userSelectedCard;
-                                });
-                        });
+                        userData.imageUrl = url; // Adicionamos a URL da imagem aos dados do usuário
+                        return { userID, userData };
                     })
-                    i++;
+                    .catch(error => {
+                        console.error(`Erro ao obter imagem para o usuário ${userID}: ${error.message}`);
+                        userData.imageUrl = ''; // Define uma URL vazia ou uma imagem padrão
+                        return { userID, userData };
+                    });
 
-                
+                promises.push(imagePromise);
             });
 
-            if (lastVisible) {
-                let paginationDiv = document.createElement('div');
-                paginationDiv.classList.add('pagination');
-
-                if (snapshot.size === pageSize) {
-                    let nextButton = document.createElement('button');
-                    nextButton.innerText = 'Next';
-                    nextButton.addEventListener('click', () => {
-                        buscarUsuariosPorCompanyID(companyID, whereToAdd, pageSize, lastVisible);
-                    });
-                }
-
-                whereToAdd.appendChild(paginationDiv);
-            }
-        } else {
-            whereToAdd.innerHTML = '<p>No users found.</p>';
+            // Aguarda todas as promessas de obtenção de imagens serem resolvidas
+            usersData = await Promise.all(promises);
         }
 
+        return { usersData, lastVisible };
     } catch (error) {
         console.error(`Erro ao buscar usuários: ${error.message}`);
+        return { usersData: [], lastVisible: null };
     }
 }
+
 
 function writeCompanyData(companyId, companyName) {
     set(ref(db, `company/${companyId}`), {
