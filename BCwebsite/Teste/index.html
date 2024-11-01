@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scroll de Conteúdo com Animação</title>
+  <style>
+    /* CSS para a section */
+    #scroll-section {
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      background-color: #f0f0f0;
+    }
+
+    .section-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: transform 0.6s ease, opacity 0.6s ease;
+      opacity: 0;
+      transform: translateY(100%);
+    }
+
+    .section-content.active {
+      opacity: 1;
+      transform: translateY(0);
+      z-index: 1;
+    }
+
+    .section-content.exiting-up {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+
+    .section-content.exiting-down {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+
+    .section-content img {
+      max-width: 80%;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    .section-content p {
+      font-size: 1.2em;
+      color: #333;
+    }
+
+    .text {
+        width: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Estrutura HTML da section -->
+  <section id="scroll-section">
+    <div class="section-content active">
+      <img src="imagem1.jpg" alt="Imagem 1">
+      <p>Este é o conteúdo do primeiro item.</p>
+    </div>
+    <div class="section-content">
+      <img src="imagem2.jpg" alt="Imagem 2">
+      <p>Este é o conteúdo do segundo item.</p>
+    </div>
+    <div class="section-content">
+      <img src="imagem3.jpg" alt="Imagem 3">
+      <p>Este é o conteúdo do terceiro item.</p>
+    </div>
+    <!-- Adicione mais itens conforme necessário -->
+  </section>
+
+  <!-- JavaScript para alternar o conteúdo -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sections = document.querySelectorAll('#scroll-section .section-content');
+      let currentIndex = 0;
+      let isScrolling = false; // Variável para controlar a rolagem
+
+      function throttleScroll(event) {
+        if (isScrolling) return;
+        isScrolling = true;
+
+        const direction = event.deltaY > 0 ? 1 : -1;
+        const nextIndex = (currentIndex + direction + sections.length) % sections.length;
+
+        // Define a direção de saída do conteúdo atual
+        sections[currentIndex].classList.add(direction > 0 ? 'exiting-up' : 'exiting-down');
+
+        // Remove a classe ativa do conteúdo atual após a animação
+        setTimeout(() => {
+          sections[currentIndex].classList.remove('active', 'exiting-up', 'exiting-down');
+          currentIndex = nextIndex;
+
+          // Adiciona a classe ativa ao novo conteúdo
+          sections[currentIndex].classList.add('active');
+          isScrolling = false; // Permite rolar novamente
+        }, 600); // Duração da animação (deve ser igual ao tempo de transição CSS)
+      }
+
+      // Ativa o primeiro conteúdo ao carregar a página
+      sections[currentIndex].classList.add('active');
+
+      // Escuta o evento de rolagem com a função throttle
+      window.addEventListener('wheel', throttleScroll, { passive: false });
+    });
+  </script>
+
+</body>
+</html>

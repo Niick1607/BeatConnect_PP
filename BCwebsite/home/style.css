@@ -69,15 +69,104 @@ header{
     width: 4vw;
 }
 
+/* ----------------INFO SECTION------------------ */
+
+.infoSection{
+    height: 90vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.section-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    text-align: center;
+    transition: transform 0.6s ease, opacity 0.6s ease;
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  .section-content.active {
+    opacity: 1;
+    transform: translateY(0);
+    z-index: 1;
+  }
+
+  .section-content.exiting-up {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  .section-content.exiting-down {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  .section-content img {
+    width: 736px;
+    height: 736px;
+    min-height: 736px;
+    height: auto;
+    margin-bottom: 20px;
+    object-fit: cover;
+  }
+
+  .section-content p {
+    font-size: 1.6em;
+    color: #c4c4c4;
+  }
+
+  .text{
+    width: 40vw;
+  }
+
+  .destaque{
+    font-size: 1.4em;
+    color: #ffffff;
+    text-shadow: 0 0 2px #0000c670, /* Sombra leve e bem próxima */
+                 0 0 6px #0b0bd09c, /* Sombra mais espaçada e sutil */
+                 0 0 12px #0101c588; /* Sombra bem difusa */
+                }
 /* ----------------SECTION 1------------------ */
 
+.title-container {
+    background-image: url('../assets/backgrounds/DALL·E\ 2024-10-28\ 21.59.11\ -\ A\ mysterious\ creature\ at\ the\ center\ of\ a\ dark\,\ foggy\ scene\ with\ shadowy\ edges\ that\ fade\ to\ black.\ The\ creature\ appears\ slightly\ eerie\,\ with\ an\ ambiguo.webp');
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+}
+
+#scroll-title {
+    color: whitesmoke;
+    font-family: 'Arial', sans-serif;
+    font-size: 3rem;
+    font-weight: bold;
+    transition: transform 0.5s ease, left 0.5s ease, top 0.5s ease;
+    position: relative;
+    z-index: 10;
+}
+
 .first-section{
-    background-image: url('assets/backgrounds/b2.png');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 
-    height: 70vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+
+    border-bottom: 1px double white;
 }
 
 /* ----------------SECTION 2------------------ */

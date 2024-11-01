@@ -53,10 +53,15 @@ function updateView(companyId) {
         console.log('Raiz');
         document.body.style.backgroundImage = '';
     } else if (currentDepth === 1) {
-
-        body.style.backgroundImage = 'url(../testes/image.jpg)';
-        body.style.backgroundSize = 'cover';
-        body.style.backdropFilter = 'blur(15px)'
+        getImage(`company/${companyId}/games/${currentPath}`)
+        .then(url => {
+            console.log(url)
+            body.style.backgroundImage = `url(${url})`;
+            body.style.backgroundSize = 'cover';
+            body.style.backdropFilter = 'blur(15px)'
+        })
+        .catch(err => {console.log(err)})
+        
     }
 
     if (typeof currentData === 'object' && !Array.isArray(currentData)) {
@@ -91,11 +96,9 @@ function updateView(companyId) {
                 addPath.appendChild(newPath);
                 let average = calculateAverage(currentData[key]);
                 averageHistory.push({ [key]: parseFloat(average.toFixed(1)) });
-            } else if (endOfThePath.includes(key)) {
-                console.log(currentData[key])
-                let average = calculateAverage(currentData[key]);
-                averageHistory.push({ [key]: parseFloat(average.toFixed(1)) });
-
+            } else if (endOfThePath.includes(key)){
+                //Verifica se esta na raiz e mostra a media por faixa etaria
+                averageHistory.push({ [key]: currentData[key] });
             }
         }
 
@@ -191,7 +194,7 @@ function calculateAverage(node) {
                     traverseCA(subNode[key]);
                 }
             }
-        } else if (typeof subNode === 'number') {
+        } else if (typeof subNode === 'number' && subNode !== 0) {
             total += subNode;
             count++;
         }
@@ -202,145 +205,211 @@ function calculateAverage(node) {
 }
 
 function cleanSystem(section, companyId) {
+    // Lista de todas as seções disponíveis
     let sectionList = [contentSection, loginSection, createEnterpriseUserSection, settingsSection];
-    //limpar essa parte, usar so hash do link smm
-    sectionList.forEach(element => {
-        if (section !== element) {
-            element.style.display = 'none';
-        } else {
-            element.style.display = 'flex';
-            if (section === sectionList[0]) {
-                updateView(companyId);
-            } else if (section === createEnterpriseUserSection) {
-                renderizarUsuarios(userListContainer, companyId);
-            }
-        }
-        if (section == null) {
-            let hash = window.location.hash.substring(1);
-            switch(hash){
-                case 'contentSection':
-                    contentSection.style.display = 'flex';
-                    updateView(companyId);
-                    break;
-                case 'usersSection':
-                    createEnterpriseUserSection.style.display = 'flex';
-                    renderizarUsuarios(userListContainer, companyId);
-                    break;
-                case 'loginSection':
-                    createEnterpriseUserSection.style.display = 'flex';
-                    break;
-                default:
-                    contentSection.style.display = 'flex';
-                    updateView(companyId);
-                    break;
-            }
-        }
-    });
+
+    // Obter o hash atual, removendo o '#' do início
+    let hash = section ? section : window.location.hash.substring(1);
+
+    // Função para esconder todas as seções
+    function hideAllSections() {
+        sectionList.forEach(sec => sec.style.display = 'none');
+    }
+
+    // Função para mostrar a seção e realizar ações extras, se necessário
+    function showSection(sectionElement, callback) {
+        sectionElement.style.display = 'flex';
+        if (callback) callback();
+    }
+
+    // Objeto para mapeamento das seções
+    const hashMap = {
+        'contentSection': () => showSection(contentSection, () => updateView(companyId)),
+        'usersSection': () => showSection(createEnterpriseUserSection, () => renderizarUsuarios(userListContainer, companyId)),
+        'loginSection': () => showSection(loginSection),
+        'settingsSection': () => showSection(settingsSection)
+    };
+
+    // Esconder todas as seções antes de mostrar a que precisamos
+    hideAllSections();
+
+    // Se o hash existir no hashMap, executa a função correspondente, senão, exibe 'contentSection' como padrão
+    (hashMap[hash] || hashMap['contentSection'])();
 }
 
-async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisibleUser = null) {
+const searchUserInput = document.getElementById('searchUser');
+    const searchUserBt = document.getElementById('searchUserBt');
+    const departmentFilter = document.getElementById('departmentFilter');
+    const sortOrder = document.getElementById('sortOrder');
+    // const userListContainer = document.querySelector('.userListContainer');
+
+    const companyID = "your_company_id"; // Substitua pelo ID real da empresa
+
+    // Função para capturar os valores de entrada e filtrar os usuários
+    function buscarUsuarios() {
+        const searchTerm = searchUserInput.value.toLowerCase().trim();
+        const selectedDepartment = departmentFilter.value;
+        const sortOption = sortOrder.value;
+
+        renderizarUsuarios(userListContainer, companyID, 14, null, searchTerm, selectedDepartment, sortOption);
+    }
+
+    // Eventos que disparam a busca
+    searchUserBt.addEventListener('click', buscarUsuarios);
+    departmentFilter.addEventListener('change', buscarUsuarios);
+    sortOrder.addEventListener('change', buscarUsuarios);
+
+// Atualizando a função renderizarUsuarios para usar filtros e ordenação
+async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisibleUser = null, searchTerm = '', selectedDepartment = '', sortOption = 'name') {
+    // Limpa o container e zera a seleção de usuários
     whereToAdd.innerHTML = '';
     localStorage.setItem('userIdSelected', null);
 
-    const { usersData, lastVisible } = await buscarUsuariosPorCompanyID(companyID, pageSize, lastVisibleUser);
+    try {
+        const { usersData, lastVisible } = await buscarUsuariosPorCompanyID(companyID, pageSize, lastVisibleUser);
 
-    if (usersData.length === 0) {
-        whereToAdd.innerHTML = '<p>No users found.</p>';
-        return;
-    }
-
-    usersData.forEach(({ userID, userData }, index) => {
-        if (index === 0) {
-            let headerDiv = `
-                <div class="userConsultReturnContainer">
-                    <div class="userListImageContainer">
-                        <p>Image</p>
-                    </div>
-                    <p>Username</p>
-                    <p>Department</p>
-                    <p>Options</p>
-                </div>
-            `;
-            let headerElement = document.createElement('div');
-            headerElement.innerHTML = headerDiv;
-            whereToAdd.appendChild(headerElement);
+        if (usersData.length === 0) {
+            whereToAdd.innerHTML = '<p>No users found.</p>';
+            return;
         }
 
-        let userDiv = `
+        // Filtra os usuários pelo termo de busca e departamento selecionado
+        let filteredUsers = usersData.filter(({ userData }) => {
+            const matchesSearchTerm = userData.username.toLowerCase().includes(searchTerm);
+            const matchesDepartment = selectedDepartment ? userData.department === selectedDepartment : true;
+            return matchesSearchTerm && matchesDepartment;
+        });
+
+        // Ordena os usuários pela opção selecionada
+        if (sortOption === 'name') {
+            filteredUsers.sort((a, b) => a.userData.username.localeCompare(b.userData.username));
+        } else if (sortOption === 'date') {
+            filteredUsers.sort((a, b) => (a.userData.creationDate || '').localeCompare(b.userData.creationDate || ''));
+        }
+
+        // Verifica se os usuários já foram adicionados anteriormente
+        let existingUserIDs = Array.from(whereToAdd.querySelectorAll('.userConsultReturnContainer'))
+            .map(el => el.dataset.userId);
+
+        // Adiciona o cabeçalho uma vez
+        let headerDiv = `
             <div class="userConsultReturnContainer">
                 <div class="userListImageContainer">
-                    <img src="${userData.imageUrl}" class="userListImage"/>
+                    <p>Image</p>
                 </div>
-                <p>${userData.username}</p>
-                <p>${userData.department}</p>
-                <div class="profileListOptContainer">
-                    <a>
-                        <img src="../assets/icons/lapis.svg" class="profileListOpt"></img>
-                    </a>
-                    <a>
-                        <img src="../assets/icons/lixo.svg" class="profileListOpt"></img>
-                    </a>
-                </div>
+                <p>Username</p>
+                <p>Department</p>
+                <p>Options</p>
             </div>
         `;
+        let headerElement = document.createElement('div');
+        headerElement.innerHTML = headerDiv;
+        whereToAdd.appendChild(headerElement);
 
-        let userElement = document.createElement('div');
-        userElement.innerHTML = userDiv;
-        let userConsultReturnContainer = userElement.firstElementChild;
-        whereToAdd.appendChild(userConsultReturnContainer);
-
-        userConsultReturnContainer.addEventListener("click", () => {
-            whereToAdd.innerHTML = '';
-            localStorage.setItem('userIdSelected', userID);
-            alert(userID)
-            let userSelectedCard = `
-                <div class="userSelectedConsultCard">
-                    <div class="consultUserImgContainer">
-                        <img src="${userData.imageUrl}" alt="">
-                    </div>
-                    <div class="userCardInfoContainer">
-                        <div class="userCardInfo">
-                            <h2>Name: ${userData.username}</h2>
+        // Adiciona os usuários à lista, evitando duplicações
+        filteredUsers.forEach(({ userID, userData }) => {
+            if (!existingUserIDs.includes(userID)) {  // Evita adicionar usuários duplicados
+                let userDiv = `
+                    <div class="userConsultReturnContainer" data-user-id="${userID}">
+                        <div class="userListImageContainer">
+                            <img src="${userData.imageUrl}" class="userListImage"/>
                         </div>
-                        <div class="userCardInfo">
-                            <h2>Email: ${userData.email}</h2>
-                        </div>
-                        <div class="userCardInfo">
-                            <h2>Department: ${userData.department}</h2>
-                        </div>
-                        <div class="userCardInfo">
-                            <h2>Birth: ${userData.birthYear}</h2>
-                        </div>
-                        <div class="userCardInfo">
-                            <h2>Time in company: 2y and 6months</h2>
-                        </div>
-                        <div class="userCardInfo">
-                            <h2>UserID: ${userID}</h2>
+                        <p>${userData.username}</p>
+                        <p>${userData.department}</p>
+                        <div class="profileListOptContainer">
+                            <a>
+                                <img src="../assets/icons/lapis.svg" class="profileListOpt"></img>
+                            </a>
+                            <a>
+                                <img src="../assets/icons/lixo.svg" class="profileListOpt"></img>
+                            </a>
                         </div>
                     </div>
-                </div>
-            `;
-            whereToAdd.innerHTML = userSelectedCard;
+                `;
+
+                let userElement = document.createElement('div');
+                userElement.innerHTML = userDiv;
+                let userConsultReturnContainer = userElement.firstElementChild;
+                whereToAdd.appendChild(userConsultReturnContainer);
+
+                // Adiciona evento de clique para abrir os detalhes do usuário
+                userConsultReturnContainer.addEventListener("click", () => {
+                    whereToAdd.innerHTML = '';
+                    localStorage.setItem('userIdSelected', userID);
+                    let userSelectedCard = `
+                        <div class="profile-container">
+                            <div class="profile-header">
+                                <img src="" alt="Foto de Fundo" class="background-img">
+                                <div class="profile-picture-container">
+                                    <img src="${userData.imageUrl}" alt="Foto de Perfil" class="profile-picture">
+                                </div>
+                            </div>
+                            <div class="profile-info">
+                                <h1>${userData.username}</h1>
+                                <h2>${userData.department}</h2>
+                                <div class="divideProfile">
+                                    <div class="sideOne">
+                                        <div class="info-sections">
+                                            <div class="info-box">
+                                                <h3>Localização</h3>
+                                                <p>Cidade, País</p>
+                                            </div>
+                                            <div class="info-box">
+                                                <h3>Email</h3>
+                                                <p>${userData.email}</p>
+                                            </div>
+                                            <div class="info-box">
+                                                <h3>Telefone</h3>
+                                                <p>(99) 99999-9999</p>
+                                            </div>
+                                            <div class="info-box">
+                                                <h3>Redes Sociais</h3>
+                                                <p><a href="#">@Instagram</a></p>
+                                                <p><a href="#">@LinkedIn</a></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="sideTwo">
+                                    <div class="divideSideTwo">
+                                            <div class="bioBox">
+                                            <h3>Biography</h3>
+                                            </div>
+                                            
+                                            <div class="insigniasBox">
+                                                <h3>Insignias</h3>
+                                            </div>
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    whereToAdd.innerHTML = userSelectedCard;
+                });
+            }
         });
-    });
 
-    if (lastVisible) {
-        let paginationDiv = document.createElement('div');
-        paginationDiv.classList.add('pagination');
+        // Adiciona o botão de paginação se houver mais usuários
+        if (lastVisible) {
+            let paginationDiv = document.createElement('div');
+            paginationDiv.classList.add('pagination');
 
-        if (usersData.length === pageSize) {
-            let nextButton = document.createElement('button');
-            nextButton.innerText = 'Next';
-            nextButton.addEventListener('click', () => {
-                renderizarUsuarios(whereToAdd, companyID, pageSize, lastVisible);
-            });
-            paginationDiv.appendChild(nextButton);
+            if (usersData.length === pageSize) {
+                let nextButton = document.createElement('button');
+                nextButton.innerText = 'Next';
+                nextButton.addEventListener('click', () => {
+                    renderizarUsuarios(whereToAdd, companyID, pageSize, lastVisible, searchTerm, selectedDepartment, sortOption);
+                });
+                paginationDiv.appendChild(nextButton);
+            }
+
+            whereToAdd.appendChild(paginationDiv);
         }
-
-        whereToAdd.appendChild(paginationDiv);
+    } catch (error) {
+        console.error(`Erro ao buscar usuários: ${error.message}`);
     }
 }
-
 
 async function startSystem(userList, companyDataVar) {
     const systemNav = `
@@ -350,7 +419,6 @@ async function startSystem(userList, companyDataVar) {
             <button id="settingsBt">Settings</button>
         </div>
     `;
-    contentSection.style.display = 'flex';
     systemNavContainer.innerHTML = systemNav;
     const systemBt = document.getElementById('systemBt');
     const usersBt = document.getElementById('usersBt');
@@ -359,54 +427,54 @@ async function startSystem(userList, companyDataVar) {
     cleanSystem(null, companyDataVar.companyId);
 
     systemBt.addEventListener("click", function () {
-        cleanSystem(contentSection, companyDataVar.companyId);
+        window.location.hash = 'contentSection';
+        cleanSystem(null, companyDataVar.companyId);
         addPath.innerHTML = '';
-        let pathFirst = `company/${userList.companyCode}/games`;
     });
     usersBt.addEventListener("click", function () {
         window.location.hash = 'usersSection';
         cleanSystem(null, companyDataVar.companyId);
     });
 
-    registerUserEnterpriseBt.addEventListener("click", () => {
-        if (userNameEnterpriseRegister.value &&
-            userEmailEnterpriseRegister.value && userDepartmentEnterpriseRegister.value &&
-            userPasswordEnterpriseRegister.value &&
-            userBirthDateRegister.value &&
-            userConfirmPasswordEnterpriseRegister.value === userPasswordEnterpriseRegister.value) {
-            writeEnterpriseUserData(userNameEnterpriseRegister.value, userEmailEnterpriseRegister.value, userDepartmentEnterpriseRegister.value, userPasswordEnterpriseRegister.value, 'BeatConnect', userList.companyCode, userBirthDateRegister.value);
-            buscarUsuariosPorCompanyID(userList.companyCode, userListContainer);
-        }
-        userNameEnterpriseRegister.value = ''
-        userEmailEnterpriseRegister.value = ''
-        userPasswordEnterpriseRegister.value = ''
-        userBirthDateRegister.value = ''
-        userConfirmPasswordEnterpriseRegister.value = ''
-        userPasswordEnterpriseRegister.value = ''
-    });
+    // registerUserEnterpriseBt.addEventListener("click", () => {
+    //     if (userNameEnterpriseRegister.value &&
+    //         userEmailEnterpriseRegister.value && userDepartmentEnterpriseRegister.value &&
+    //         userPasswordEnterpriseRegister.value &&
+    //         userBirthDateRegister.value &&
+    //         userConfirmPasswordEnterpriseRegister.value === userPasswordEnterpriseRegister.value) {
+    //         writeEnterpriseUserData(userNameEnterpriseRegister.value, userEmailEnterpriseRegister.value, userDepartmentEnterpriseRegister.value, userPasswordEnterpriseRegister.value, 'BeatConnect', userList.companyCode, userBirthDateRegister.value);
+    //         buscarUsuariosPorCompanyID(userList.companyCode, userListContainer);
+    //     }
+    //     userNameEnterpriseRegister.value = ''
+    //     userEmailEnterpriseRegister.value = ''
+    //     userPasswordEnterpriseRegister.value = ''
+    //     userBirthDateRegister.value = ''
+    //     userConfirmPasswordEnterpriseRegister.value = ''
+    //     userPasswordEnterpriseRegister.value = ''
+    // });
 
     settingsBt.addEventListener("click", function () {
-        window.location.hash = 'usersSection';
+        window.location.hash = 'settingsSection';
         cleanSystem(null, companyDataVar.companyId);
     });
-    console.log(userList.userUid)
-    getImage(`users/${userList.userUid}.png`).then(url => {
-        const settingsConfig = `
-            <div class="settingsContainer">
-                <h1>Profile Settings</h1>
-                <div class="profileSettingContainer">
-                    <img src="${url}">
-                    <div class="profileSettingsTextContent">
-                        <h2>${userList.username}</h2>
-                        <h2>${userList.email}</h2>
-                        <h2>${userList.department}</h2>
-                        <h2>${userList.userUid}</h2>
-                    </div>
-                </div>
-            </div>
-    `
-        settingsSection.innerHTML = settingsConfig
-    })
+    // console.log(userList.userUid)
+    // getImage(`users/${userList.userUid}.png`).then(url => {
+    //     const settingsConfig = `
+    //         <div class="settingsContainer">
+    //             <h1>Profile Settings</h1>
+    //             <div class="profileSettingContainer">
+    //                 <img src="${url}">
+    //                 <div class="profileSettingsTextContent">
+    //                     <h2>${userList.username}</h2>
+    //                     <h2>${userList.email}</h2>
+    //                     <h2>${userList.department}</h2>
+    //                     <h2>${userList.userUid}</h2>
+    //                 </div>
+    //             </div>
+    //         </div>
+    // `
+    //     settingsSection.innerHTML = settingsConfig
+    // })
 }
 
 function drawGraphic(condition, outComeArray) {
@@ -535,4 +603,6 @@ checkUser().then((result) => {
 }).catch((error) => {
     console.error(`Erro ao verificar usuário: ${error}`);
 });
+
+
 
