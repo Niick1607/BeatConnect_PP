@@ -121,138 +121,16 @@
         </section>
 
         <section class="settings">
-            <div class="profile-container">
-                <div class="profile-header">
-                    <img src="" alt="Foto de Fundo" class="background-img">
-                    <div class="profile-picture-container">
-                        <img src="${userData.imageUrl}" alt="Foto de Perfil" class="profile-picture">
-                    </div>
-                    <!-- Botão de lápis para ativar o modo de edição -->
-                    <button id="editButton" class="edit-button">
-                        <img src="assets/icons/lapis.svg" alt="Editar">
-                    </button>
-                </div>
-                <div class="profile-info">
-                    <h1 class="editable-text" data-field="username">${userData.username}</h1>
-                    <h2 class="editable-text" data-field="department">${userData.department}</h2>
-                    <div class="divideProfile">
-                        <div class="sideOne">
-                            <div class="info-sections">
-                                <div class="info-box">
-                                    <h3>Localização</h3>
-                                    <p class="editable-text" data-field="location">Cidade, País</p>
-                                </div>
-                                <div class="info-box">
-                                    <h3>Email</h3>
-                                    <p class="editable-text" data-field="email">${userData.email}</p>
-                                </div>
-                                <div class="info-box">
-                                    <h3>Telefone</h3>
-                                    <p class="editable-text" data-field="phone">(99) 99999-9999</p>
-                                </div>
-                                <div class="info-box">
-                                    <h3>Redes Sociais</h3>
-                                    <p class="editable-text" data-field="instagram">@Instagram</p>
-                                    <p class="editable-text" data-field="linkedin">@LinkedIn</p>
-                                </div>
-                            </div>
-                        </div>
             
-                        <div class="sideTwo">
-                            <div class="divideSideTwo">
-                                <div class="bioBox">
-                                    <h3>Biography</h3>
-                                    <p class="editable-text" data-field="biography">Escreva algo sobre você...</p>
-                                </div>
-                                <div class="insigniasBox">
-                                    <h3>Insignias</h3>
-                                    <p>Este campo pode ser gerado automaticamente com base no progresso do usuário.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <button id="saveChangesButton" class="hidden">Salvar Alterações</button>
-                </div>
-            </div>
-            
-            <script>
-            // Alternar entre modo de visualização e edição
-            document.getElementById('editButton').addEventListener('click', () => {
-                const editMode = document.getElementById('editButton').classList.toggle('editing');
-                const editableElements = document.querySelectorAll('.editable-text');
-            
-                editableElements.forEach(element => {
-                    if (editMode) {
-                        // Modo de edição: substitui texto por input
-                        const value = element.textContent.trim();
-                        const input = document.createElement('input');
-                        input.type = 'text';
-                        input.value = value;
-                        input.dataset.field = element.dataset.field;
-                        input.classList.add('edit-input');
-                        element.replaceWith(input);
-                    } else {
-                        // Modo de visualização: substitui input por texto
-                        const input = element;
-                        const value = input.value.trim();
-                        const p = document.createElement('p');
-                        p.textContent = value;
-                        p.dataset.field = input.dataset.field;
-                        p.classList.add('editable-text');
-                        input.replaceWith(p);
-                    }
-                });
-            
-                // Mostrar ou ocultar o botão de salvar alterações
-                document.getElementById('saveChangesButton').classList.toggle('hidden', !editMode);
-            });
-            
-            // Salvando as alterações no banco de dados
-            document.getElementById('saveChangesButton').addEventListener('click', () => {
-                const updatedUserData = {};
-                document.querySelectorAll('.edit-input').forEach(input => {
-                    updatedUserData[input.dataset.field] = input.value.trim();
-                });
-            
-                // Exemplo: Atualizar no banco de dados
-                update(ref(db, `users/enterprise/${userID}`), updatedUserData)
-                    .then(() => {
-                        alert('Informações atualizadas com sucesso!');
-                        document.getElementById('editButton').click(); // Sai do modo de edição
-                    })
-                    .catch((error) => {
-                        console.error("Erro ao atualizar as informações: ", error);
-                        alert('Erro ao salvar alterações. Tente novamente mais tarde.');
-                    });
-            });
-            </script>
-            
-            <style>
-            .edit-button {
-                background: none;
-                border: none;
-                cursor: pointer;
-                position: absolute;
-                top: 10px;
-                right: 10px;
-            }
-            
-            .hidden {
-                display: none;
-            }
-            
-            .edit-input {
-                width: calc(100% - 20px);
-                margin-bottom: 10px;
-            }
-            </style>
-            
-        </section>
+       
+        </section> 
+
+        
     </main>
 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="module" src="../db/src/dataBase.js"></script>
-    <script type="module" src="System.js"></script>
+    <!-- <script type="module" src="System.js"></script> -->
 
 </body>
 
