@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="systemStyle.css">
+    <title>BeatConnect</title>
+</head>
+
+<body>
+    <main>
+        <div class="spanMessage">
+            <div class="spanMessageText"></div>
+        </div>
+        
+        <div class="systemNavContainer"></div>
+
+        <section class="login">
+            
+        </section>
+
+        <section class="createEnterpriseUser">
+            <div class="gridUsers">
+
+                <div class="side">
+                    <div class="userConsultCard">
+                        <div class="searchUserContainer">
+                            <div class="searchBarContainer">
+                                <input type="text" name="searchUser" id="searchUser" placeholder="Search...">
+                                <button id="searchUserBt">Search</button>
+
+                                <label for="departmentFilter">Department:</label>
+                                <select id="departmentFilter">
+                                    <option value="">All</option>
+                                    <option value="Administration">Administration</option>
+                    <option value="CEO">CEO</option>
+                    <option value="Development">Development</option>
+                    <option value="Game Programmer">Game Programmer</option>
+                    <option value="Gameplay Engineer">Gameplay Engineer</option>
+                    <option value="Engine Developer">Engine Developer</option>
+                    <option value="Physics Programmer">Physics Programmer</option>
+                    <option value="Tools Programmer">Tools Programmer</option>
+                    <option value="UI/UX Developer">UI/UX Developer</option>
+                    <option value="Development">Graphics Programmer</option>
+                    <option value="3D Modeler">3D Modeler</option>
+                    <option value="Character Artist">Character Artist</option>
+                    <option value="Environment Artist">Environment Artist</option>
+                    <option value="Technical Artist">Technical Artist</option>
+                    <option value="Texture Artist">Texture Artist</option>
+                    <option value="Technical Artist">Technical Artist</option>
+                    <option value="Props Artist">Props Artist</option>
+                    <option value="Sound Designer">Sound Designer</option>
+                    <option value="Composer">Composer</option>
+                    <option value="Audio Engineer">Audio Engineer</option>
+                    <option value="Audio Implementer">Audio Implementer</option>
+                    <option value="Foley Artist">Foley Artist</option>
+                    <option value="Dialogue Editor">Dialogue Editor</option>
+                    <option value="Interactive Music Composer">Interactive Music Composer</option>
+                    <option value="Game Writer">Game Writer</option>
+                    <option value="Quality Assurance">Quality Assurance</option>
+                    <option value="Development">Development</option>
+                    <option value="Sales">Sales</option>
+                    <option value="HR">HR</option>
+                                </select>
+
+                                <label for="sortOrder">Sort By:</label>
+                                <select id="sortOrder">
+                                    <option value="name">Name</option>
+                                    <option value="date">Date</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="userListContainer">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="path"></div>
+            <div class="gridContent">
+                <div class="consultReturn" id="addPath">
+                </div>
+                <div class="consultReturnInfo" id="consultReturnInfo">
+                    <div id="graphics"></div>
+
+                    <div class="addModal"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="companySettings" style="display: none;">
+
+          
+        </section>
+
+        <section class="settings">
+
+        </section>
+
+
+    </main>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="module" src="db/src/dataBase.js?v=1.0.1"></script>
+</body>
+
+</html>

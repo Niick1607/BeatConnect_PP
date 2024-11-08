@@ -46,21 +46,46 @@
                             <div class="searchBarContainer">
                                 <input type="text" name="searchUser" id="searchUser" placeholder="Search...">
                                 <button id="searchUserBt">Search</button>
-                                
-                                    <label for="departmentFilter">Department:</label>
-                                    <select id="departmentFilter">
-                                        <option value="">All</option>
-                                        <option value="development">Development</option>
-                                        <option value="Marketing">Marketing</option>
-                                        <option value="Sales">Sales</option>
-                                        <option value="HR">HR</option>
-                                    </select>
 
-                                    <label for="sortOrder">Sort By:</label>
-                                    <select id="sortOrder">
-                                        <option value="name">Name</option>
-                                        <option value="date">Date</option>
-                                    </select>
+                                <label for="departmentFilter">Department:</label>
+                                <select id="departmentFilter">
+                                    <option value="">All</option>
+                                    <option value="Administration">Administration</option>
+                    <option value="CEO">CEO</option>
+                    <option value="Development">Development</option>
+                    <option value="Game Programmer">Game Programmer</option>
+                    <option value="Gameplay Engineer">Gameplay Engineer</option>
+                    <option value="Engine Developer">Engine Developer</option>
+                    <option value="Physics Programmer">Physics Programmer</option>
+                    <option value="Tools Programmer">Tools Programmer</option>
+                    <option value="UI/UX Developer">UI/UX Developer</option>
+                    <option value="Development">Graphics Programmer</option>
+                    <option value="3D Modeler">3D Modeler</option>
+                    <option value="Character Artist">Character Artist</option>
+                    <option value="Environment Artist">Environment Artist</option>
+                    <option value="Technical Artist">Technical Artist</option>
+                    <option value="Texture Artist">Texture Artist</option>
+                    <option value="Technical Artist">Technical Artist</option>
+                    <option value="Props Artist">Props Artist</option>
+                    <option value="Sound Designer">Sound Designer</option>
+                    <option value="Composer">Composer</option>
+                    <option value="Audio Engineer">Audio Engineer</option>
+                    <option value="Audio Implementer">Audio Implementer</option>
+                    <option value="Foley Artist">Foley Artist</option>
+                    <option value="Dialogue Editor">Dialogue Editor</option>
+                    <option value="Interactive Music Composer">Interactive Music Composer</option>
+                    <option value="Game Writer">Game Writer</option>
+                    <option value="Quality Assurance">Quality Assurance</option>
+                    <option value="Development">Development</option>
+                    <option value="Sales">Sales</option>
+                    <option value="HR">HR</option>
+                                </select>
+
+                                <label for="sortOrder">Sort By:</label>
+                                <select id="sortOrder">
+                                    <option value="name">Name</option>
+                                    <option value="date">Date</option>
+                                </select>
                             </div>
                         </div>
                         <div class="userListContainer">
@@ -68,42 +93,6 @@
                         </div>
                     </div>
                 </div>
-
-
-                <!-- <aside class="side">
-                    <div class="userEnterpriseRegisterCard">
-                        <h1>Register User</h1>
-                        <input type="text" id="userNameEnterpriseRegister" placeholder="Full name">
-                        <input type="text" id="userEmailEnterpriseRegister" placeholder="Email">
-
-                        <div class="departmentContainder">
-                            <label for="department">Department:</label>
-                            <select id="department" name="department">
-                                <option value="Development">Development</option>
-                                <option value="Quality Assurance (QA)">Quality Assurance (QA)</option>
-                                <option value="Product Management">Product Management</option>
-                                <option value="User Experience (UX) Design">User Experience (UX) Design</option>
-                                <option value="DevOps (Development Operations)">DevOps (Development Operations)</option>
-                                <option value="Technical Support">Technical Support</option>
-                                <option value="Sales and Marketing">Sales and Marketing</option>
-                                <option value="Human Resources (HR)">Human Resources (HR)</option>
-                                <option value="Finance and Accounting">Finance and Accounting</option>
-                                <option value="Information Technology (IT)">Information Technology (IT)</option>
-                                <option value="Admin">Admin</option>
-
-                            </select>
-                        </div>
-
-                        <input type="password" id="userPasswordEnterpriseRegister" placeholder="Password">
-                        <input type="password" id="userConfirmPasswordEnterpriseRegister"
-                            placeholder="Confirm password">
-                        <input type="date" id="userBirthDateRegister" placeholder="Birth date">
-
-                        <button id="registerUserBt" value="Register user">
-                            <span>Register user</span>
-                        </button>
-                    </div>
-                </aside> -->
             </div>
         </section>
 
@@ -120,18 +109,85 @@
             </div>
         </section>
 
-        <section class="settings">
-            
-       
-        </section> 
+        <section class="companySettings">
 
-        
+            <h2>Register Enterprise User</h2>
+            <form id="enterpriseUserForm">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required><br><br>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required><br><br>
+
+                <label for="department">Department:</label>
+                <select id="department" name="department">
+                    <option value="Administration">Administration</option>
+                    <option value="Development">Development</option>
+                    <option value="Game Programmer">Game Programmer</option>
+                    <option value="Gameplay Engineer">Gameplay Engineer</option>
+                    <option value="Engine Developer">Engine Developer</option>
+                    <option value="Physics Programmer">Physics Programmer</option>
+                    <option value="Tools Programmer">Tools Programmer</option>
+                    <option value="UI/UX Developer">UI/UX Developer</option>
+                    <option value="Development">Graphics Programmer</option>
+                    <option value="3D Modeler">3D Modeler</option>
+                    <option value="Character Artist">Character Artist</option>
+                    <option value="Environment Artist">Environment Artist</option>
+                    <option value="Technical Artist">Technical Artist</option>
+                    <option value="Texture Artist">Texture Artist</option>
+                    <option value="Technical Artist">Technical Artist</option>
+                    <option value="Props Artist">Props Artist</option>
+                    <option value="Sound Designer">Sound Designer</option>
+                    <option value="Composer">Composer</option>
+                    <option value="Audio Engineer">Audio Engineer</option>
+                    <option value="Audio Implementer">Audio Implementer</option>
+                    <option value="Foley Artist">Foley Artist</option>
+                    <option value="Dialogue Editor">Dialogue Editor</option>
+                    <option value="Interactive Music Composer">Interactive Music Composer</option>
+                    <option value="Game Writer">Game Writer</option>
+                    <option value="Quality Assurance">Quality Assurance</option>
+                    <option value="Development">Development</option>
+                    <option value="Sales">Sales</option>
+                    <option value="HR">HR</option>
+                </select><br><br>
+
+                <label for="companyCode">Company Code:</label>
+                <input type="text" id="companyCode" name="companyCode"><br><br>
+
+                <label for="birthYear">Birth Year:</label>
+                <input type="number" id="birthYear" name="birthYear" min="1900" max="2024"><br><br>
+
+                <label for="country">Country:</label>
+                <input type="text" id="country" name="country"><br><br>
+
+                <label for="state">State:</label>
+                <input type="text" id="state" name="state"><br><br>
+
+                <label for="phone">Phone:</label>
+                <input type="tel" id="phone" name="phone"><br><br>
+
+                <label for="instagramLink">Instagram Link:</label>
+                <input type="url" id="instagramLink" name="instagramLink"><br><br>
+
+                <label for="linkedinLink">LinkedIn Link:</label>
+                <input type="url" id="linkedinLink" name="linkedinLink"><br><br>
+
+                <button type="button" id="createUserBt">Submit</button>
+            </form>
+        </section>
+
+        <section class="settings">
+
+        </section>
+
+
     </main>
 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="module" src="../db/src/dataBase.js"></script>
-    <!-- <script type="module" src="System.js"></script> -->
-
 </body>
 
 </html>
