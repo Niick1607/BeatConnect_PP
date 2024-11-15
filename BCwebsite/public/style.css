@@ -50,8 +50,6 @@ body {
     }
 }
 
-
-
 main {
     transition: background .6s ease-in;
     padding: 20px;
@@ -143,6 +141,35 @@ input#logInBt {
 
 input#logInBt:hover {
     background-color: var(--secondary);
+}
+
+.google-sign-in-btn {
+    width: 3.5vw; 
+    height: 3.5vw;
+    margin: .9vw 0;
+    border: none;
+    border-radius: 50%; 
+    background-color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.google-sign-in-btn img {
+    width: 24px; 
+    height: 24px;
+}
+
+/* Efeito de clique */
+.google-sign-in-btn:hover {
+    transform: scale(1.05);
+}
+
+.google-sign-in-btn:active {
+    transform: scale(0.95);
 }
 
 input#signUpRedirectBt {
@@ -788,8 +815,6 @@ textarea {
 
     
 }
-
-
 
 .edit-button {
     background: none;

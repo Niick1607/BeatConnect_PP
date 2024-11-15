@@ -1,14 +1,15 @@
 import { firebaseConfig } from './firebaseConfig.js';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import { GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 import { getDatabase, ref, set, get, query, orderByChild, equalTo, onValue, update, runTransaction, limitToFirst, startAfter } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-storage.js";
 
+//VARIAVEIS DE INICIACAO DO FIREBASE
 const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 const auth = getAuth(app);
 const db = getDatabase(app);
-
 
 //SECTIONS
 const body = document.querySelector('body');
@@ -17,27 +18,21 @@ const loginSection = document.querySelector('.login');
 const createEnterpriseUserSection = document.querySelector('.createEnterpriseUser');
 const settingsSection = document.querySelector('.settings');
 const companySettings = document.querySelector('.companySettings');
-
-//CADASTRO DE USUARIO DENTRO DA EMPRESA
-
 const userListContainer = document.querySelector('.userListContainer');
 
 //SYSTEM
 const systemNavContainer = document.querySelector('.systemNavContainer');
 const addPath = document.getElementById('addPath');
 const pathElement = document.querySelector('.path');
-
 const data = await getValues('company/10001/games/')
 const graphicColors = ["#0D1F22", "#264027", "#3C5233", "#6F732F", "#B38A58", "#fefae0"];
-
-//VARIAVEIS 
 var userInfo = {};
 var currentPath = [];
-let averageHistory = [];
+var averageHistory = [];
 var currentData = data;
-console.log(data)
 
 
+//FUNCOES COM INTEGRACAO AO FIREBASE
 async function getValues(reference) {
     try {
         const snapshot = await get(ref(db, reference));
@@ -72,9 +67,33 @@ async function signUp(name, email, password, birthYear) {
 async function signIn(email, password) {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log('Usuário logado: ${userCredential.user}');
+        console.log(`Usuário logado: ${userCredential.user}`);
     } catch (error) {
         console.error(`Erro de login: ${error.code}, ${error.message}`);
+
+        if (error.code === 'auth/wrong-password') {
+            alert('Incorrect password. Please try again.');
+        } else if (error.code === 'auth/user-not-found') {
+            alert('User not found. Please check the email entered.');
+        } else if (error.code === 'auth/too-many-requests') {
+            alert('Too many failed attempts. Please try again later.');
+        } else if (error.code === 'auth/network-request-failed') {
+            alert('Network error. Please check your internet connection.');
+        } else {
+            alert(`Unexpected error: ${error.message}`);
+        }
+    }
+}
+
+async function signInWithGoogle(event) {
+    event.preventDefault(); // Evita o recarregamento da página
+    const provider = new GoogleAuthProvider();
+    try {
+        const result = await signInWithPopup(auth, provider);
+        console.log('Usuário logado com Google:', result.user);
+        // Aqui você pode redirecionar ou atualizar a interface conforme necessário
+    } catch (error) {
+        console.error("Erro ao fazer login com Google:", error);
     }
 }
 
@@ -174,17 +193,17 @@ async function buscarUsuariosPorCompanyID(companyID, pageSize = 14, lastVisibleU
     }
 }
 
-
-function writeCompanyData(companyId, companyName) {
+function writeCompanyData(companyId, companyName, ctID) {
     set(ref(db, `company/${companyId}`), {
-        companyName: companyName
+        companyName: companyName,
+        CorporateTaxID: ctID
     });
 }
-
 
 async function writeGameData(companyId, path, partName, deep) {
     let fatherData = await getValues(`company/${companyId}/games/${path}`);
 
+    // CASO SEJA ADICIONADO UM NOVO CAMINHO NO FINAL, PEGA OS DADOS DAS MEDIAS POR IDADE E PASSAR PARA O NOVO CAMINHO CRIADO, SE NAO TIVER NENHUM DADO DO TIPO, SERA CRIADO
     if (['14-', '15-17', '18-24', '25-39', '40-59', '60+'].some(key => fatherData.hasOwnProperty(key))) {
         const keysToRemove = ['14-', '15-17', '18-24', '25-39', '40-59', '60+'];
         const updates = {};
@@ -207,10 +226,11 @@ async function writeGameData(companyId, path, partName, deep) {
         update(ref(db, `company/${companyId}/games/${path}/${partName}`), data)
     }
 }
-// writeEnterpriseUserData("Adrian Dariva", "adriandariva@gmail.com", "Teamonoko", "Game Writer", 10001, 2006, "Brasil", "Rio Grande do Sul", "(55) 51 000000000", "", "", null)
-async function writeEnterpriseUserData(name, email, password, department, companyCode, birthYear, country, state, phone, instagramLink, linkedinLink, selected) {
-    const userDataList = {};
 
+async function writeEnterpriseUserData(name, email, password, department, companyCode, birthYear, country, state, phone, instagramLink, linkedinLink, selected) {
+
+    //CRIA LISTA PARA ADICIONAR NO BANCO COM BASE NOS DADOS QUE EXISTEM
+    const userDataList = {};
     if (name) userDataList.username = name;
     if (email) userDataList.email = email;
     if (department) userDataList.department = department;
@@ -662,7 +682,7 @@ async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisi
                                         <h3>Biography</h3>
                                         <p>${userData.bio}</p>
                                     </div>
-                                    <div class="insigniasBox" id="insigniasBoxUsers">
+                                    <div class="insigniasBox" id="insigniasBoxUsers${userID}">
                                         <h3>Insignias</h3>
                                     </div>
                                 </div>
@@ -672,7 +692,9 @@ async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisi
                 </div>
                     `;
                         whereToAdd.innerHTML = userSelectedCard;
-                        let insigniasBoxUsers = document.getElementById("insigniasBoxUsers")
+                        let insigniasBoxUsers = document.getElementById(`insigniasBoxUsers${userID}`)
+
+                        displayUserBadges(userID, insigniasBoxUsers);
 
                         profilePicture.addEventListener('mousemove', (event) => {
                             // Obtém as dimensões da imagem e a posição do mouse em relação a ela
@@ -689,7 +711,6 @@ async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisi
                         });
 
 
-                        displayUserBadges(userID, insigniasBoxUsers);
 
                     });
                 });
@@ -951,8 +972,11 @@ function showLoginScreen() {
                         required>
                     <label for="password" class="logLabel">Password</label>
                 </div>
-
+                <div id="errMessage"></div>
                 <input type="button" value="Log-in" id="logInBt">
+                <button id="googleSignInBt" class="google-sign-in-btn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+                </button>
                 <input type="button" value="SignUp" id="signUpRedirectBt">
 
             </div>
@@ -961,8 +985,10 @@ function showLoginScreen() {
     let loginBt = document.getElementById('logInBt');
     let emailInput = document.getElementById('emailInput');
     let passwordInput = document.getElementById('passwordInput');
+    document.getElementById("googleSignInBt").addEventListener("click", signInWithGoogle);
     let logIn = async () => {
         try {
+            console.log(emailInput.value, passwordInput.value)
             await signIn(emailInput.value, passwordInput.value);
             const result = await checkUserAndProceed();
             if (result.status === 'log') {
@@ -979,6 +1005,7 @@ function showLoginScreen() {
         let signInDiv = `
         <div class="cardLogin">
                     <h5>SignIn</h5>
+                    <h6>Corporate accounts must be created within the system. Please ask an administrator to create your corporate account.</h6>
                     
                     <div class="form_group field">
                         <input type="text" id="usernameInput" name="username" placeholder="Username" class="logInput" required>
@@ -1015,13 +1042,13 @@ function showLoginScreen() {
         let signUpBt = document.getElementById('logInBt');
         let usernameInput = document.getElementById('usernameInput');
         let birthDateInput = document.getElementById('birthDate');
-        emailInput = document.getElementById('emailInput');
-        passwordInput = document.getElementById('passwordInput');
+        let emailCreateInput = document.getElementById('emailInput');
+        let passwordCreateInput = document.getElementById('passwordInput');
         let confirmPasswordInput = document.getElementById('confirmPasswordInput');
         let signUp = async () => {
-            if (confirmPasswordInput.value === passwordInput.value) {
+            if (confirmPasswordInput.value === passwordCreateInput.value) {
                 try {
-                    await signUp(usernameInput.value, emailInput.value, passwordInput.value, birthDateInput.value);
+                    await signUp(usernameInput.value, emailCreateInput.value, passwordCreateInput.value, birthDateInput.value);
                     const result = await checkUserAndProceed();
                     if (result.status === 'log') {
                         location.reload();
@@ -1047,8 +1074,6 @@ checkUserAndProceed().catch((error) => {
     console.error(`Erro ao verificar usuário: ${error}`);
     showLoginScreen();
 });
-
-
 
 async function showSettings(whereToAdd) {
     console.log(userInfo)
@@ -1117,7 +1142,7 @@ async function showSettings(whereToAdd) {
 
         quitBt.addEventListener("click", () => {
             auth.signOut();
-            window.location.reload();
+            location.reload(true);
         })
 
         profilePicture.addEventListener('click', () => {
@@ -1273,7 +1298,7 @@ async function showCompanySettings(whereToAdd) {
     `
     whereToAdd.innerHTML = settingsDiv;
 
-    
+
     document.getElementById("createUserBt").addEventListener("click", async () => {
         const name = document.getElementById('name').value;
         const email = document.getElementById('email').value;
@@ -1286,14 +1311,14 @@ async function showCompanySettings(whereToAdd) {
         const instagramLink = document.getElementById('instagramLink').value;
         const linkedinLink = document.getElementById('linkedinLink').value;
         const selected = null; // Placeholder for actual selection, modify as needed
-    
+
         try {
             // Deslogar usuário atual antes de criar um novo
             if (auth.currentUser) {
                 await signOut(auth);
                 console.log('Usuário atual deslogado');
             }
-    
+
             // Chamar a função para criar o novo usuário
             await writeEnterpriseUserData(name, email, password, department, userInfo.companyCode, birthYear, country, state, phone, instagramLink, linkedinLink, selected);
             alert('User data submitted successfully');
@@ -1303,7 +1328,7 @@ async function showCompanySettings(whereToAdd) {
             alert('Failed to submit user data');
         }
     });
-    
+
 
 }
 
