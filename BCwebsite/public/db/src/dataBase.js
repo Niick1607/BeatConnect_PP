@@ -52,7 +52,7 @@ async function signUp(name, email, password, birthYear) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const newUser = userCredential.user;
-        console.log('Usuário criado:', newUser);
+        console.log(`Usuário criado: ${newUser}`);
         await set(ref(db, `users/normal/${newUser.uid}`), {
             userName: name,
             email: newUser.email,
@@ -86,12 +86,11 @@ async function signIn(email, password) {
 }
 
 async function signInWithGoogle(event) {
-    event.preventDefault(); // Evita o recarregamento da página
+    event.preventDefault();
     const provider = new GoogleAuthProvider();
     try {
         const result = await signInWithPopup(auth, provider);
         console.log('Usuário logado com Google:', result.user);
-        // Aqui você pode redirecionar ou atualizar a interface conforme necessário
     } catch (error) {
         console.error("Erro ao fazer login com Google:", error);
     }
@@ -120,7 +119,7 @@ async function findUserByEmail(email) {
                     }
                 }
             }
-            return null; // Retorna null se nn achar email
+            return null; // retorna null se nn achar email
         } else {
             console.log("Nenhum usuário encontrado.");
             return null;
@@ -167,22 +166,20 @@ async function buscarUsuariosPorCompanyID(companyID, pageSize = 14, lastVisibleU
                 const userData = childSnapshot.val();
                 lastVisible = childSnapshot;
 
-                // Adicionamos a promessa de obter a imagem ao array de promessas
                 const imagePromise = getImage(`users/${userID}.png`)
                     .then(url => {
-                        userData.imageUrl = url; // Adicionamos a URL da imagem aos dados do usuário
+                        userData.imageUrl = url; 
                         return { userID, userData };
                     })
                     .catch(error => {
                         console.error(`Erro ao obter imagem para o usuário ${userID}: ${error.message}`);
-                        userData.imageUrl = ''; // Define uma URL vazia ou uma imagem padrão
+                        userData.imageUrl = ''; 
                         return { userID, userData };
                     });
 
                 promises.push(imagePromise);
             });
 
-            // Aguarda todas as promessas de obtenção de imagens serem resolvidas
             usersData = await Promise.all(promises);
         }
 
@@ -243,23 +240,20 @@ async function writeEnterpriseUserData(name, email, password, department, compan
     if (linkedinLink) userDataList.linkedinLink = linkedinLink;
 
     try {
-        // Criar o novo usuário
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         await set(ref(db, `users/enterprise/${user.uid}`), userDataList);
         console.log('Usuário de empresa criado com sucesso:', user.uid);
 
-        // Deslogar o novo usuário
         await signOut(auth);
         console.log('Novo usuário deslogado');
 
-        // Re-logar o usuário anterior, se houver
         if (auth.currentUser) {
             await signInWithEmailAndPassword(auth, currentUser.email, currentUser.password);
         }
     } catch (error) {
         console.error(`Erro ao criar usuário de empresa: ${error}`);
-        throw error; // Lança o erro para ser tratado na função de criação do usuário
+        throw error;
     }
 }
 
@@ -358,8 +352,7 @@ function updateView(companyId) {
                 addPath.appendChild(newPath);
                 let average = calculateAverage(currentData[key]);
                 averageHistory.push({ [key]: parseFloat(average.toFixed(1)) });
-            } else if (endOfThePath.includes(key)) {
-                //Verifica se esta na raiz e mostra a media por faixa etaria
+            } else if (endOfThePath.includes(key)) { //verifica se raiz e mostra a media por faixa etaria
                 averageHistory.push({ [key]: currentData[key] });
             }
         }
@@ -467,24 +460,19 @@ function calculateAverage(node) {
 }
 
 function cleanSystem(section, companyId) {
-    // Lista de todas as seções disponíveis
     let sectionList = [contentSection, loginSection, createEnterpriseUserSection, settingsSection, companySettings];
 
-    // Obter o hash atual, removendo o '#' do início
     let hash = section ? section : window.location.hash.substring(1);
 
-    // Função para esconder todas as seções
     function hideAllSections() {
         sectionList.forEach(sec => sec.style.display = 'none');
     }
 
-    // Função para mostrar a seção e realizar ações extras, se necessário
     function showSection(sectionElement, callback) {
         sectionElement.style.display = 'flex';
         if (callback) callback();
     }
 
-    // Objeto para mapeamento das seções
     const hashMap = {
         'contentSection': () => showSection(contentSection, () => updateView(companyId)),
         'usersSection': () => showSection(createEnterpriseUserSection, () => renderizarUsuarios(userListContainer, userInfo.companyCode)),
@@ -493,10 +481,9 @@ function cleanSystem(section, companyId) {
         'companySettings': () => showSection(companySettings, () => showCompanySettings(companySettings))
     };
 
-    // Esconder todas as seções antes de mostrar a que precisamos
     hideAllSections();
 
-    // Se o hash existir no hashMap, executa a função correspondente, senão, exibe 'contentSection' como padrão
+    // se hash existir no hashMap, executa a função, senão, exibe a padrão
     (hashMap[hash] || hashMap['contentSection'])();
 }
 
@@ -504,10 +491,9 @@ const searchUserInput = document.getElementById('searchUser');
 const searchUserBt = document.getElementById('searchUserBt');
 const departmentFilter = document.getElementById('departmentFilter');
 const sortOrder = document.getElementById('sortOrder');
-// const userListContainer = document.querySelector('.userListContainer');
 
 
-// Função para capturar os valores de entrada e filtrar os usuários
+// funcao para capturar os valores de entrada e filtrar os usuarios
 function buscarUsuarios() {
     const searchTerm = searchUserInput.value.toLowerCase().trim();
     const selectedDepartment = departmentFilter.value;
@@ -516,7 +502,7 @@ function buscarUsuarios() {
     renderizarUsuarios(userListContainer, userInfo.companyCode, 14, null, searchTerm, selectedDepartment, sortOption);
 }
 
-// Eventos que disparam a busca
+// eventos que disparam a busca
 searchUserBt.addEventListener('click', buscarUsuarios);
 departmentFilter.addEventListener('change', buscarUsuarios);
 sortOrder.addEventListener('change', buscarUsuarios);
@@ -524,7 +510,6 @@ sortOrder.addEventListener('change', buscarUsuarios);
 
 async function displayUserBadges(userUid, badgesContainerElement) {
     try {
-        // Referência ao usuário para acessar suas informações, incluindo as insígnias
         let userRef = ref(db, `users/enterprise/${userUid}`);
         let userSnapshot = await get(userRef);
 
@@ -536,7 +521,6 @@ async function displayUserBadges(userUid, badgesContainerElement) {
                 let badgeIds = Object.keys(badges);
 
                 for (let badgeId of badgeIds) {
-                    // Referência à insígnia para obter a imagem
                     console.log(`Buscando insígnia: ${badgeId}`);
                     let badgeRef = ref(db, `company/10001/badges/${badgeId}`);
                     let badgeSnapshot = await get(badgeRef);
@@ -544,7 +528,6 @@ async function displayUserBadges(userUid, badgesContainerElement) {
                     let imageStorageRef = storageRef(storage, `company/10001/badges/${badgeId}.png`);
                     let imageDownloadUrl = await getDownloadURL(imageStorageRef);
 
-                    // Criar um elemento de imagem e adicionar ao contêiner
                     let badgeImageElement = document.createElement('img');
                     badgeImageElement.src = imageDownloadUrl;
                     badgeImageElement.classList.add('badge-image');
@@ -564,9 +547,7 @@ async function displayUserBadges(userUid, badgesContainerElement) {
 }
 
 
-// Atualizando a função renderizarUsuarios para usar filtros e ordenação
 async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisibleUser = null, searchTerm = '', selectedDepartment = '', sortOption = 'name') {
-    // Limpa o container e zera a seleção de usuários
     whereToAdd.innerHTML = '';
     localStorage.setItem('userIdSelected', null);
 
@@ -578,25 +559,21 @@ async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisi
             return;
         }
 
-        // Filtra os usuários pelo termo de busca e departamento selecionado
         let filteredUsers = usersData.filter(({ userData }) => {
             const matchesSearchTerm = userData.username.toLowerCase().includes(searchTerm);
             const matchesDepartment = selectedDepartment ? userData.department === selectedDepartment : true;
             return matchesSearchTerm && matchesDepartment;
         });
 
-        // Ordena os usuários pela opção selecionada
         if (sortOption === 'name') {
             filteredUsers.sort((a, b) => a.userData.username.localeCompare(b.userData.username));
         } else if (sortOption === 'date') {
             filteredUsers.sort((a, b) => (a.userData.creationDate || '').localeCompare(b.userData.creationDate || ''));
         }
 
-        // Verifica se os usuários já foram adicionados anteriormente
         let existingUserIDs = Array.from(whereToAdd.querySelectorAll('.userConsultReturnContainer'))
             .map(el => el.dataset.userId);
 
-        // Adiciona o cabeçalho uma vez
         let headerDiv = `
             <div class="userConsultReturnContainer">
                 <div class="userListImageContainer">
@@ -611,9 +588,8 @@ async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisi
         headerElement.innerHTML = headerDiv;
         whereToAdd.appendChild(headerElement);
 
-        // Adiciona os usuários à lista, evitando duplicações
         filteredUsers.forEach(({ userID, userData }) => {
-            if (!existingUserIDs.includes(userID)) {  // Evita adicionar usuários duplicados
+            if (!existingUserIDs.includes(userID)) {  // evita adicionar usuários duplicados
                 let userDiv = `
                     <div class="userConsultReturnContainer" data-user-id="${userID}">
                         <div class="userListImageContainer">
@@ -637,7 +613,6 @@ async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisi
                 let userConsultReturnContainer = userElement.firstElementChild;
                 whereToAdd.appendChild(userConsultReturnContainer);
 
-                // Adiciona evento de clique para abrir os detalhes do usuário
                 userConsultReturnContainer.addEventListener("click", () => {
                     whereToAdd.innerHTML = '';
                     localStorage.setItem('userIdSelected', userID);
@@ -697,16 +672,15 @@ async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisi
                         displayUserBadges(userID, insigniasBoxUsers);
 
                         profilePicture.addEventListener('mousemove', (event) => {
-                            // Obtém as dimensões da imagem e a posição do mouse em relação a ela
+                            // pega as dimensões da imagem e a posição do mouse em relação a ela
                             let { left, top, width, height } = profilePicture.getBoundingClientRect();
                             let x = event.clientX - left;
                             let y = event.clientY - top;
 
-                            // Calcula o quanto a imagem deve se inclinar com base na posição do mouse
-                            let moveX = ((x / width) - 0.5) * 20;  // Valor entre -10 e 10
-                            let moveY = ((y / height) - 0.5) * 20; // Valor entre -10 e 10
+                            // calcula o quanto a imagem deve se inclinar com base na posição do mouse
+                            let moveX = ((x / width) - 0.5) * 20;  // val entre -10 e 10
+                            let moveY = ((y / height) - 0.5) * 20; // val entre -10 e 10
 
-                            // Aplica a transformação de inclinação
                             profilePicture.style.transform = `scale(1.05) rotateX(${-moveY}deg) rotateY(${moveX}deg)`;
                         });
 
@@ -717,7 +691,6 @@ async function renderizarUsuarios(whereToAdd, companyID, pageSize = 14, lastVisi
             }
         });
 
-        // Adiciona o botão de paginação se houver mais usuários
         if (lastVisible) {
             let paginationDiv = document.createElement('div');
             paginationDiv.classList.add('pagination');
@@ -846,8 +819,6 @@ function drawGraphic(condition, outComeArray) {
                 is3D: true
             };
 
-
-
             let chart;
             if (currentChartType === 'PieChart') {
                 chart = new google.visualization.PieChart(addGraphic);
@@ -866,30 +837,29 @@ function checkUserAndProceed() {
     return new Promise((resolve, reject) => {
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // currentUserUid = user;
-                console.log(`Usuário está logado:`, user);
+                console.log(`Usuário está logado: ${user}`);
                 const userAuthData = {
                     uid: user.uid,
                     email: user.email
                 };
 
                 try {
-                    // Verifica se o usuário é de empresa
+                    // verifica se o usuário é de empresa
                     const enterpriseRef = ref(db, `users/enterprise/${user.uid}`);
                     const enterpriseSnapshot = await get(enterpriseRef);
                     const enterpriseUserData = enterpriseSnapshot.val();
 
                     if (enterpriseUserData) {
-                        console.log(`Dados do usuário de empresa encontrados:`, enterpriseUserData);
+                        console.log(`Dados do usuário de empresa encontrados: ${enterpriseUserData}`);
                         proceedWithUser({ status: 'log', userAuthData, userData: enterpriseUserData });
                     } else {
-                        // Se não for de empresa, verifica se é um usuário normal
+                        // se não for de empresa, verifica se é um usuário normal
                         const normalRef = ref(db, `users/normal/${user.uid}`);
                         const normalSnapshot = await get(normalRef);
                         const normalUserData = normalSnapshot.val();
 
                         if (normalUserData) {
-                            console.log(`Dados do usuário normal encontrados:`, normalUserData);
+                            console.log(`Dados do usuário normal encontrados: ${normalUserData}`);
                             proceedWithUser({ status: 'log', userAuthData, userData: normalUserData });
                         } else {
                             console.warn('Usuário encontrado, mas sem dados específicos de tipo (empresa ou normal).');
@@ -938,7 +908,7 @@ async function searchCompanyData(companyCode) {
         const snapshot = await get(ref(db, `company/${companyCode}`));
         const company = snapshot.val();
 
-        // Adicionada a verificação se company não é null
+        // adicionada a verificação se company não é null
         if (!company) {
             console.warn(`Nenhum dado encontrado para o código da empresa: ${companyCode}`);
             return null;
@@ -1069,7 +1039,7 @@ function showLoginScreen() {
 
 }
 
-// Inicia a verificação do usuário e execução do sistema
+// inicia a verificação do usuário e execução do sistema
 checkUserAndProceed().catch((error) => {
     console.error(`Erro ao verificar usuário: ${error}`);
     showLoginScreen();
@@ -1146,73 +1116,62 @@ async function showSettings(whereToAdd) {
         })
 
         profilePicture.addEventListener('click', () => {
-            fileInput.click(); // Simula um clique no input de arquivo
+            fileInput.click(); // importar foto de usuario
         });
 
-        // Quando o usuário selecionar um arquivo, fazer o upload da nova imagem
+        // quando o usuário selecionar arquivo, fazer o upload da nova imagem
         fileInput.addEventListener('change', (event) => {
             let file = event.target.files[0];
             if (file) {
-                let userUid = userInfo.userUid; // Assumindo que você já tem o UID do usuário disponível
+                let userUid = userInfo.userUid; 
                 updateProfilePicture(userUid, file);
             }
         });
 
-        // Função para substituir a foto de perfil
+        // substitui a foto no storage
         async function updateProfilePicture(userUid, file) {
             try {
-                // Cria uma referência para o local da foto de perfil no Firebase Storage
                 let profilePicRef = storageRef(storage, `users/${userUid}.png`);
 
-                // Fazer upload do novo arquivo
                 let uploadTask = uploadBytesResumable(profilePicRef, file);
 
-                // Monitore o progresso do upload
                 uploadTask.on('state_changed',
                     (snapshot) => {
-                        // Progresso do upload
+                        // progresso do upload
                         let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                         console.log(`Upload está em ${progress}% completo`);
                     },
                     (error) => {
-                        // Erro no upload
-                        console.error('Erro no upload da foto de perfil:', error);
+                        console.error(`Erro no upload da foto de perfil: ${error}`);
                     },
                     () => {
-                        // Upload completo, agora obtemos o URL de download
                         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                             console.log('Foto de perfil atualizada! URL:', downloadURL);
 
-                            // Atualiza a imagem de perfil na página com o novo URL
                             profilePicture.src = downloadURL;
 
-                            // Aqui você pode salvar o novo URL no banco de dados se necessário
                         });
                     }
                 );
             } catch (error) {
-                console.error('Erro ao substituir a foto de perfil:', error);
+                console.error(`Erro ao substituir a foto de perfil: ${error}`);
             }
         }
 
 
 
         profilePicture.addEventListener('mousemove', (event) => {
-            // Obtém as dimensões da imagem e a posição do mouse em relação a ela
             let { left, top, width, height } = profilePicture.getBoundingClientRect();
             let x = event.clientX - left;
             let y = event.clientY - top;
 
-            // Calcula o quanto a imagem deve se inclinar com base na posição do mouse
-            let moveX = ((x / width) - 0.5) * 20;  // Valor entre -10 e 10
-            let moveY = ((y / height) - 0.5) * 20; // Valor entre -10 e 10
+            let moveX = ((x / width) - 0.5) * 20;  
+            let moveY = ((y / height) - 0.5) * 20; 
 
-            // Aplica a transformação de inclinação
             profilePicture.style.transform = `scale(1.05) rotateX(${-moveY}deg) rotateY(${moveX}deg)`;
         });
 
         profilePicture.addEventListener('mouseleave', () => {
-            // Reseta a transformação quando o mouse sair da imagem
             profilePicture.style.transform = 'scale(1)';
         });
 
@@ -1221,9 +1180,6 @@ async function showSettings(whereToAdd) {
                 bio: document.getElementById("bioInput").value
             });
         })
-
-
-
 
         displayUserBadges(userInfo.userUid, insigniasBox);
     });
@@ -1310,16 +1266,14 @@ async function showCompanySettings(whereToAdd) {
         const phone = document.getElementById('phone').value;
         const instagramLink = document.getElementById('instagramLink').value;
         const linkedinLink = document.getElementById('linkedinLink').value;
-        const selected = null; // Placeholder for actual selection, modify as needed
+        const selected = null; 
 
         try {
-            // Deslogar usuário atual antes de criar um novo
             if (auth.currentUser) {
                 await signOut(auth);
                 console.log('Usuário atual deslogado');
             }
 
-            // Chamar a função para criar o novo usuário
             await writeEnterpriseUserData(name, email, password, department, userInfo.companyCode, birthYear, country, state, phone, instagramLink, linkedinLink, selected);
             alert('User data submitted successfully');
             location.reload(true)
